@@ -31,6 +31,7 @@ jobs:
     env:
       SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
     steps:
+      - name: checkout
       - uses: actions/checkout@v4
       - name: Download artifact from previous job
         uses: actions/download-artifact@v4
