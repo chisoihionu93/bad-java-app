@@ -31,12 +31,12 @@ jobs:
     env:
       SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
     steps:
-    - uses: actions/checkout@v4
-    - name: Download artifact from previous job
-      uses: actions/download-artifact@v4
-      with:
-        name: mavendeptree
-    - run: semgrep --config auto
+      - uses: actions/checkout@v4
+      - name: Download artifact from previous job
+        uses: actions/download-artifact@v4
+        with:
+          name: mavendeptree
+      - run: semgrep --config auto
 
 
  
