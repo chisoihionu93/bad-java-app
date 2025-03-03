@@ -16,8 +16,27 @@ jobs:
         with:
           java-version: 1.8
       - name: Build with Maven
-        run: mvn dependency:tree -DoutputFile=maven_dep_tree.txt clean package 
-
+        run: mvn dependency:tree -DoutputFile=maven_dep_tree.txt 
+      - name: Upload Dependency Tree Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mavendeptree
+          path: maven_dep_tree.txt
+  semgrep:
+    needs: build
+    name: Scan
+    runs-on: ubuntu-20.04
+    container:
+      image: semgrep/semgrep
+    env:
+      SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+    steps:
+    - uses: actions/checkout@v4
+    - name: Download artifact from previous job
+      uses: actions/download-artifact@v4
+      with:
+        name: mavendeptree
+    - run: semgrep --config auto
 
 
  
