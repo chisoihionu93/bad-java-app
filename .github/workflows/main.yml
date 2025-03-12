@@ -1,41 +1,52 @@
-name: Maven CI with Nexus IQ
+name: Maven CI with Semgrep Supply Chain
 
 on: [push, workflow_dispatch]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v1
-    - name: Set up JDK 1.8
-      uses: actions/setup-java@v1
-      with:
-        java-version: 1.8
-    - name: Build with Maven
-      run: mvn dependency:tree -DoutputFile=maven_dep_tree.txt 
-    - name: Upload Dependency Tree Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: mavendeptree
-        path: maven_dep_tree.txt
-  semgrep:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Build with Maven and Install Dependencies
+        run: mvn clean install -DskipTests
+      - name: Upload Maven Repository
+        uses: actions/upload-artifact@v4
+        with:
+          name: maven_repo
+          path: ~/.m2/repository
+
+  semgrep_scan:
     needs: build
-    name: Scan
-    runs-on: ubuntu-20.04
-    container:
-      image: semgrep/semgrep
+    runs-on: ubuntu-latest
     env:
       SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
     steps:
-    - uses: actions/checkout@v4
-    - name: Download artifact from previous job
-      uses: actions/download-artifact@v4
-      with:
-        name: mavendeptree
-    - run: semgrep --config auto
-    - run: semgrep --config "p/supply-chain"
+      - uses: actions/checkout@v4
+      - name: Download Maven Repository
+        uses: actions/download-artifact@v4
+        with:
+          name: maven_repo
+          path: ~/.m2/repository
+
+      # ✅ Install Semgrep CLI (in case the container version is outdated)
+      - name: Install Latest Semgrep
+        run: |
+          python3 -m pip install --upgrade semgrep
+
+      # ✅ Run Semgrep Supply Chain on Installed Dependencies
+      - name: Run Semgrep Supply Chain Scan
+        run: |
+          semgrep supply-chain scan --config p/supply-chain --json > semgrep_supply_chain_results.json
+
+      - name: Upload Semgrep Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep_results
+          path: semgrep_supply_chain_results.json
 
 
  
