@@ -47,10 +47,8 @@ jobs:
       - name: Validate Semgrep Token
         run: echo $SEMGREP_APP_TOKEN | wc -c
 
-      - name: Run Semgrep Supply Chain Scan
-        run: |
-          semgrep supply-chain scan --config p/supply-chain --json > semgrep_supply_chain_results.json
-
+      - name: Run Semgrep with Explicit File Path
+        run: semgrep supply-chain scan --config p/supply-chain --json --dependency-tree /tmp/maven_dep_tree.txt > /tmp/semgrep_results.json
 
 
  
