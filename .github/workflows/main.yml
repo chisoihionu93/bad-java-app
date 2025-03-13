@@ -48,7 +48,7 @@ jobs:
         run: echo $SEMGREP_APP_TOKEN | wc -c
 
       - name: Run Semgrep with Explicit File Path
-        run: semgrep ci
+        run: semgrep ci --metrics=off
 
  
        
