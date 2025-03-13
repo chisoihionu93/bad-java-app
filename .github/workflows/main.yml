@@ -48,8 +48,7 @@ jobs:
         run: echo $SEMGREP_APP_TOKEN | wc -c
 
       - name: Run Semgrep with Explicit File Path
-        run: semgrep supply-chain scan --config p/supply-chain --json --dependency-tree /tmp/maven_dep_tree.txt > /tmp/semgrep_results.json
-
+        run: semgrep ci
 
  
        
