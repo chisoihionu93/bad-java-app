@@ -41,6 +41,12 @@ jobs:
         with:
           name: mavendeptree
 
+      - name: Debug Semgrep Environment
+        run: ls -la
+
+      - name: Validate Semgrep Token
+        run: echo $SEMGREP_APP_TOKEN | wc -c
+
       - name: Run Semgrep Supply Chain Scan
         run: |
           semgrep supply-chain scan --config p/supply-chain --json > semgrep_supply_chain_results.json
