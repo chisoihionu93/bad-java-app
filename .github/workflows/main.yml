@@ -1,6 +1,13 @@
 name: Maven CI with Semgrep Supply Chain
 
-on: [push, workflow_dispatch]
+on: 
+  workflow_dispatch:
+  pull_request: {}
+  push:
+    branches:
+    - main
+    paths:
+    - .github/workflows/main.yml
 
 jobs:
   build:
@@ -12,41 +19,31 @@ jobs:
         with:
           java-version: 1.8
       - name: Build with Maven and Install Dependencies
-        run: mvn clean install -DskipTests
-      - name: Upload Maven Repository
-        uses: actions/upload-artifact@v4
+        run: mvn clean install dependency:tree -DoutputFile=maven_dep_tree.txt -DskipTests
+      - name: Upload Dependency Tree Artifact
+        uses: actions/upload-artifact@v3
         with:
-          name: maven_repo
-          path: ~/.m2/repository
+          name: mavendeptree
+          path: maven_dep_tree.txt
 
   semgrep_scan:
     needs: build
     runs-on: ubuntu-latest
     env:
       SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+    container:
+      image: semgrep/semgrep
     steps:
       - uses: actions/checkout@v4
-      - name: Download Maven Repository
-        uses: actions/download-artifact@v4
+      - name: Download artifact from previous job
+        uses: actions/download-artifact@v3
         with:
-          name: maven_repo
-          path: ~/.m2/repository
+          name: mavendeptree
 
-      # ✅ Install Semgrep CLI (in case the container version is outdated)
-      - name: Install Latest Semgrep
-        run: |
-          python3 -m pip install --upgrade semgrep
-
-      # ✅ Run Semgrep Supply Chain on Installed Dependencies
       - name: Run Semgrep Supply Chain Scan
         run: |
           semgrep supply-chain scan --config p/supply-chain --json > semgrep_supply_chain_results.json
 
-      - name: Upload Semgrep Results
-        uses: actions/upload-artifact@v4
-        with:
-          name: semgrep_results
-          path: semgrep_supply_chain_results.json
 
 
  
