@@ -32,7 +32,7 @@ WORKDIR /owasp/BenchmarkJava
 RUN mvn clean package cargo:install
 
 RUN useradd -d /home/bench -m -s /bin/bash bench 
-RUN echo bench:bench | *******
+RUN echo bench:bench | chpasswd
 
 RUN chown -R bench /owasp/
 ENV PATH /owasp/BenchmarkJava:$PATH
